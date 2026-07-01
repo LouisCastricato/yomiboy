@@ -1,0 +1,24 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "node scripts/build-vercel.mjs",
+  "outputDirectory": "public",
+  "functions": {
+    "api/enrich.js": {
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "{server/data/jmdict-compact.json,server/data/pitch_accents.txt,node_modules/kuromoji/dict/**}"
+    },
+    "api/ocr.js": { "maxDuration": 30 },
+    "api/translate.js": { "maxDuration": 30 }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin" },
+        { "key": "Cross-Origin-Embedder-Policy", "value": "require-corp" },
+        { "key": "Cross-Origin-Resource-Policy", "value": "same-origin" }
+      ]
+    }
+  ]
+}

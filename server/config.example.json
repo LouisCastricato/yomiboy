@@ -1,0 +1,17 @@
+{
+  "httpPort": 8080,
+  "tcpPort": 8081,
+
+  "useElevenLabs": false,
+  "elevenLabs": {
+    "apiKey": "",
+    "voiceId": "",
+    "modelId": "eleven_multilingual_v2"
+  },
+
+  "useTranslate": false,
+  "anthropic": {
+    "apiKey": "",
+    "model": "claude-haiku-4-5"
+  }
+}

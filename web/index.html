@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Emerald JP Reader</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <header>
+      <div class="brand"><span class="ball"></span> Emerald <span class="jp-tag">JP</span></div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="read">📖 Read</button>
+        <button class="tab" data-tab="history">🕐 History</button>
+        <button class="tab" data-tab="saved">🔖 Saved <span class="badge" id="savedBadge">0</span></button>
+      </nav>
+      <div class="header-right">
+        <button class="icon-btn" id="settingsBtn" title="Settings">⚙</button>
+        <span class="status-dot" id="statusDot" title="connection"></span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- emulator column -->
+      <aside class="emu-col">
+        <div class="emu-screen-wrap">
+          <canvas class="emu-canvas" id="emuCanvas" width="240" height="160" tabindex="0"></canvas>
+          <div class="emu-controls">
+            <label class="emu-btn primary">📂 Load ROM<input type="file" id="romInput" accept=".gba,.zip" hidden /></label>
+            <button class="emu-btn" id="autoBtn">Auto-read: ON</button>
+            <button class="emu-btn" id="ocrBtn">📷 Read now</button>
+            <button class="emu-btn" id="muteBtn">🔇 Muted</button>
+            <button class="emu-btn" id="pauseBtn">⏸</button>
+            <button class="emu-btn" id="grabBtn" title="Download the raw native frame (debug)">⬇ frame</button>
+          </div>
+        </div>
+
+        <div class="emu-gamepad">
+          <div class="dpad">
+            <button class="pad-btn up" data-btn="Up">▲</button>
+            <button class="pad-btn left" data-btn="Left">◀</button>
+            <button class="pad-btn center"></button>
+            <button class="pad-btn right" data-btn="Right">▶</button>
+            <button class="pad-btn down" data-btn="Down">▼</button>
+          </div>
+          <div class="mid-btns">
+            <button class="pill" data-btn="Select">SELECT</button>
+            <button class="pill" data-btn="Start">START</button>
+          </div>
+          <div class="ab-group">
+            <button class="lr-btn" data-btn="L">L</button>
+            <button class="lr-btn" data-btn="R">R</button>
+            <button class="ab-btn" data-btn="B">B</button>
+            <button class="ab-btn" data-btn="A">A</button>
+          </div>
+        </div>
+
+        <div class="emu-status" id="emuStatus">Loading emulator…</div>
+        <details class="emu-help">
+          <summary>controls &amp; how it works</summary>
+          <p><b>Keys:</b> arrows = D-pad, <b>Z</b>=A, <b>X</b>=B, <b>A</b>=L, <b>S</b>=R,
+          <b>Enter</b>=Start, <b>Backspace</b>=Select — or use the on-screen pad.</p>
+          <p><b>Continuous reading:</b> just play. Dialogue &amp; battle text are read automatically
+          and appear with romaji + meanings. <b>Auto-read</b> pauses/resumes it (cost control).</p>
+          <p><b>📷 Read now</b> reads the whole screen on demand (menus, names). OCR uses Claude vision.</p>
+        </details>
+      </aside>
+
+      <!-- reading panel -->
+      <div class="reader">
+        <div class="reader-inner">
+          <section id="tab-read">
+            <div id="placeholder" class="empty-note">
+              <div style="font-size:40px;opacity:.4;margin-bottom:12px;">📖</div>
+              <p>Waiting for game text… load a ROM and play. Dialogue is read automatically.</p>
+            </div>
+            <div id="lineWrap" hidden>
+              <div class="line-card">
+                <div class="line-meta" id="lineMeta"></div>
+                <div class="line-jp jp" id="lineJp"></div>
+                <div class="line-romaji" id="lineRomaji"></div>
+                <div class="chips" id="lineChips"></div>
+              </div>
+              <div class="word-detail empty" id="wordDetail">
+                <p>Tap a word above to see its reading, pitch accent, and meaning.</p>
+              </div>
+              <div id="translateCard"></div>
+            </div>
+          </section>
+
+          <section id="tab-history" hidden>
+            <div class="history-bar">
+              <div class="search-wrap"><input type="text" id="histSearch" placeholder="Search dialogue or romaji…" /></div>
+            </div>
+            <div class="history-list" id="historyList"></div>
+          </section>
+
+          <section id="tab-saved" hidden>
+            <div class="saved-stats">
+              <div class="stat-card"><div class="stat-val green" id="statWords">0</div><div class="stat-label">Words saved</div></div>
+              <div class="stat-card"><div class="stat-val gold" id="statSeen">0</div><div class="stat-label">Lines this session</div></div>
+              <div class="stat-card"><div class="stat-val accent" id="statNew">0</div><div class="stat-label">New this session</div></div>
+            </div>
+            <div class="saved-actions"><a class="wd-btn" href="/api/cards/export">⬇ Export Anki deck</a></div>
+            <div class="saved-list" id="savedList"></div>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="settingsModal" hidden>
+      <div class="modal-card">
+        <h2>Settings</h2>
+        <label><input type="checkbox" id="setKanaRomaji" /> Romaji above each kana (learning mode)</label>
+        <label><input type="checkbox" id="setFurigana" /> Show furigana over kanji</label>
+        <label><input type="checkbox" id="setPitch" /> Show pitch-accent marks</label>
+        <label><input type="checkbox" id="setAutoTranslate" /> Auto-translate each line (Claude)</label>
+        <label><input type="checkbox" id="setAutoSpeak" /> Auto-speak each new line</label>
+        <label>Voice
+          <select id="setTts">
+            <option value="auto">Auto (ElevenLabs if set, else browser)</option>
+            <option value="browser">Browser only (free)</option>
+          </select>
+        </label>
+        <p class="muted" id="capabilities"></p>
+        <div class="modal-actions">
+          <a href="/api/cards/export" class="wd-btn">⬇ Export Anki</a>
+          <button id="closeSettings" class="wd-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" hidden></div>
+
+    <script type="module" src="/app.js"></script>
+    <script type="module" src="/emulator.js"></script>
+  </body>
+</html>

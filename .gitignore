@@ -1,0 +1,19 @@
+# dependencies
+node_modules/
+
+# local secrets / runtime
+server/config.json
+server/data/*
+# committed for Vercel (the serverless enrich function bundles these):
+!server/data/jmdict-compact.json
+!server/data/pitch_accents.txt
+
+# build output
+public/
+
+# your ROM (do not commit copyrighted ROMs)
+web/rom/
+
+# OS / logs
+.DS_Store
+*.log

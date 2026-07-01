@@ -1,0 +1,22 @@
+{
+  "name": "yomiboy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Play Japanese Game Boy Advance games in your browser and read the dialogue — live romaji, dictionary meanings, pitch accent, TTS, and translation. For learners who read romaji.",
+  "scripts": {
+    "setup": "node scripts/setup.mjs",
+    "build:charmap": "node scripts/build-charmap.mjs",
+    "build:dict": "node scripts/build-dict-compact.mjs",
+    "vercel-build": "node scripts/build-vercel.mjs",
+    "start": "node server/index.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
+    "@thenick775/mgba-wasm": "^2.4.1",
+    "kuromoji": "^0.1.2",
+    "wanakana": "^5.3.1",
+    "ws": "^8.18.0"
+  }
+}
